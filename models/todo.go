@@ -24,6 +24,7 @@ type Todo struct {
 	Deadline   *time.Time`json:"deadline"`
 	Status     Status    `json:"status" gorm:"type:enum('done','undone');default:'undone'"`
 	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 	Category   *Category `json:"category,omitempty"`
 }
 

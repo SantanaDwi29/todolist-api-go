@@ -23,7 +23,7 @@ func main() {
 	config.ConnectDB()
 
 	// Auto Migrate Models
-	config.DB.AutoMigrate(&models.User{}, &models.Category{}, &models.Todo{})
+	config.DB.AutoMigrate(&models.User{}, &models.Category{}, &models.Todo{}, &models.FocusSession{}, &models.Milestone{})
 
 	// Initialize Gin router
 	r := gin.Default()

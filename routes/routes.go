@@ -30,5 +30,19 @@ func SetupRoutes(r *gin.Engine) {
 		apiRoutes.PUT("/todos/:id", controllers.UpdateTodo)
 		apiRoutes.PATCH("/todos/:id/status", controllers.ToggleTodoStatus)
 		apiRoutes.DELETE("/todos/:id", controllers.DeleteTodo)
+
+		// Analytics
+		apiRoutes.GET("/analytics", controllers.GetAnalytics)
+
+		// Focus Session
+		apiRoutes.GET("/focus/current", controllers.GetCurrentFocusSession)
+		apiRoutes.POST("/focus/start", controllers.StartFocusSession)
+		apiRoutes.POST("/focus/pause", controllers.PauseFocusSession)
+		apiRoutes.POST("/focus/resume", controllers.ResumeFocusSession)
+		apiRoutes.POST("/focus/stop", controllers.StopFocusSession)
+
+		// Milestones
+		apiRoutes.GET("/milestones/next", controllers.GetNextMilestone)
+		apiRoutes.POST("/milestones", controllers.CreateMilestone)
 	}
 }
