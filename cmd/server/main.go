@@ -6,7 +6,6 @@ import (
 
 	"todolist-api/internal/config"
 	"todolist-api/internal/database"
-	"todolist-api/internal/models"
 	"todolist-api/internal/routes"
 
 	"github.com/gin-contrib/cors"
@@ -21,7 +20,7 @@ func main() {
 	database.ConnectDB()
 
 	// Auto Migrate Models
-	database.DB.AutoMigrate(&models.User{}, &models.Category{}, &models.Todo{}, &models.FocusSession{}, &models.Milestone{})
+	database.MigrateDB()
 
 	// Initialize Gin router
 	r := gin.Default()
