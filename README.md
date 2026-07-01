@@ -108,3 +108,20 @@ Untuk menjalankan Backend ini secara mandiri, ikuti langkah-langkah berikut:
   Database SQL migration completed successfully!
   Server starting on port 8080
   ```
+
+## 7. Command Line Interface (CLI)
+
+Proyek ini juga dilengkapi dengan beberapa tool CLI (Command Line Interface) yang fungsionalitasnya mirip dengan Artisan di Laravel.
+
+### Menjalankan Migrasi Secara Terpisah
+Jika Anda sedang menjalankan server dan tidak ingin mematikannya untuk menjalankan file migrasi baru (mirip seperti `php artisan migrate`), Anda dapat membuka tab terminal baru dan mengeksekusi:
+```bash
+go run cmd/migrate/main.go
+```
+
+### Membuat OAuth Client (Untuk Frontend)
+Untuk menghasilkan Client ID dan Client Secret yang akan digunakan oleh aplikasi Frontend Anda (mirip seperti `php artisan passport:client`), eksekusi perintah berikut di terminal:
+```bash
+go run cmd/passport/main.go --name="Nama Frontend App Anda"
+```
+Setelah dieksekusi, terminal akan menampilkan `Client ID` dan `Client Secret` yang bisa langsung Anda gunakan di sisi Frontend.
