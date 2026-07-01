@@ -36,16 +36,21 @@ func SetupRoutes(r *gin.Engine) {
 	milestoneHandler := handler.NewMilestoneHandler(milestoneService)
 	analyticsHandler := handler.NewAnalyticsHandler(analyticsService)
 
-	// Public routes
-	authRoutes := r.Group("/api/auth")
+	// API Root Group - Mewajibkan validasi Client ID dan Client Secret
+	apiRoot := r.Group("/api")
+	apiRoot.Use(middleware.ClientAuthMiddleware())
 	{
-		authRoutes.POST("/register", authHandler.Register)
-		authRoutes.POST("/login", authHandler.Login)
-	}
+		// Public routes (Tanpa JWT, tapi butuh Client ID/Secret)
+		authRoutes := apiRoot.Group("/auth")
+		{
+			authRoutes.POST("/register", authHandler.Register)
+			authRoutes.POST("/login", authHandler.Login)
+		}
 
-	// Protected routes
-	apiRoutes := r.Group("/api")
-	apiRoutes.Use(middleware.AuthMiddleware())
+		// Protected routes (Butuh Client ID/Secret + Token JWT User)
+		apiRoutes := apiRoot.Group("")
+		apiRoutes.Use(middleware.AuthMiddleware())
+
 	{
 		// Categories
 		apiRoutes.GET("/categories", categoryHandler.GetCategories)
@@ -73,4 +78,6 @@ func SetupRoutes(r *gin.Engine) {
 		apiRoutes.GET("/milestones/next", milestoneHandler.GetNextMilestone)
 		apiRoutes.POST("/milestones", milestoneHandler.CreateMilestone)
 	}
+	}
 }
+
