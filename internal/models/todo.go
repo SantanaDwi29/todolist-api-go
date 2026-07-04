@@ -18,6 +18,7 @@ type Todo struct {
 	ID         uint      `json:"id" gorm:"primaryKey"`
 	UserID     uint      `json:"user_id" gorm:"not null"`
 	CategoryID *uint     `json:"category_id"`
+	ProjectID  *uint     `json:"project_id"`
 	Title      string    `json:"title" gorm:"not null"`
 	Description string   `json:"description"`
 	Priority   Priority  `json:"priority" gorm:"type:enum('high','medium','easy');default:'easy'"`
@@ -26,10 +27,12 @@ type Todo struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	Category   *Category `json:"category,omitempty"`
+	Project    *Project  `json:"project,omitempty"`
 }
 
 type TodoInput struct {
 	CategoryID  *uint     `json:"category_id"`
+	ProjectID   *uint     `json:"project_id"`
 	Title       string    `json:"title" binding:"required"`
 	Description string    `json:"description"`
 	Priority    Priority  `json:"priority" binding:"required,oneof=high medium easy"`

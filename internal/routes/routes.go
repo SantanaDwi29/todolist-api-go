@@ -16,13 +16,15 @@ func SetupRoutes(r *gin.Engine) {
 	// Init Repositories
 	authRepo := repository.NewAuthRepository(db)
 	todoRepo := repository.NewTodoRepository(db)
+	projectRepo := repository.NewProjectRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 	focusRepo := repository.NewFocusRepository(db)
 	milestoneRepo := repository.NewMilestoneRepository(db)
 
 	// Init Services
 	authService := service.NewAuthService(authRepo)
-	todoService := service.NewTodoService(todoRepo)
+	todoService := service.NewTodoService(todoRepo, projectRepo)
+	projectService := service.NewProjectService(projectRepo)
 	categoryService := service.NewCategoryService(categoryRepo)
 	focusService := service.NewFocusService(focusRepo)
 	milestoneService := service.NewMilestoneService(milestoneRepo)
@@ -31,6 +33,7 @@ func SetupRoutes(r *gin.Engine) {
 	// Init Handlers
 	authHandler := handler.NewAuthHandler(authService)
 	todoHandler := handler.NewTodoHandler(todoService)
+	projectHandler := handler.NewProjectHandler(projectService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	focusHandler := handler.NewFocusHandler(focusService)
 	milestoneHandler := handler.NewMilestoneHandler(milestoneService)
@@ -56,6 +59,12 @@ func SetupRoutes(r *gin.Engine) {
 		apiRoutes.GET("/categories", categoryHandler.GetCategories)
 		apiRoutes.POST("/categories", categoryHandler.CreateCategory)
 		apiRoutes.DELETE("/categories/:id", categoryHandler.DeleteCategory)
+
+		// Projects
+		apiRoutes.GET("/projects", projectHandler.GetAllProjects)
+		apiRoutes.POST("/projects", projectHandler.CreateProject)
+		apiRoutes.GET("/projects/:id", projectHandler.GetProjectByID)
+		apiRoutes.DELETE("/projects/:id", projectHandler.DeleteProject)
 
 		// Todos
 		apiRoutes.GET("/todos", todoHandler.GetTodos)
