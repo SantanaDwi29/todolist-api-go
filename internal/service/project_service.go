@@ -9,6 +9,7 @@ type ProjectService interface {
 	GetAllProjects(userID uint) ([]models.Project, error)
 	CreateProject(userID uint, input models.ProjectInput) (models.Project, error)
 	GetProjectByID(id string, userID uint) (models.Project, error)
+	UpdateProject(id string, userID uint, input models.ProjectInput) (models.Project, error)
 	UpdateProjectStatus(id string, userID uint, status models.ProjectStatus) (models.Project, error)
 	DeleteProject(id string, userID uint) error
 }
@@ -39,6 +40,19 @@ func (s *projectService) CreateProject(userID uint, input models.ProjectInput) (
 
 func (s *projectService) GetProjectByID(id string, userID uint) (models.Project, error) {
 	return s.repo.FindByID(id, userID)
+}
+
+func (s *projectService) UpdateProject(id string, userID uint, input models.ProjectInput) (models.Project, error) {
+	project, err := s.repo.FindByID(id, userID)
+	if err != nil {
+		return project, err
+	}
+
+	project.Name = input.Name
+	project.Description = input.Description
+
+	err = s.repo.Update(&project)
+	return project, err
 }
 
 func (s *projectService) UpdateProjectStatus(id string, userID uint, status models.ProjectStatus) (models.Project, error) {

@@ -64,6 +64,7 @@ func SetupRoutes(r *gin.Engine) {
 		apiRoutes.GET("/projects", projectHandler.GetAllProjects)
 		apiRoutes.POST("/projects", projectHandler.CreateProject)
 		apiRoutes.GET("/projects/:id", projectHandler.GetProjectByID)
+		apiRoutes.PUT("/projects/:id", projectHandler.UpdateProject)
 		apiRoutes.DELETE("/projects/:id", projectHandler.DeleteProject)
 
 		// Todos
