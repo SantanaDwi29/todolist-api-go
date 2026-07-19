@@ -2,6 +2,8 @@ package database
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -24,9 +26,29 @@ func MigrateDB() {
 		log.Fatal("Failed to create migration driver:", err)
 	}
 
+	// Dynamically locate the migrations folder relative to the current working directory
+	migrationsPath := "migrations"
+	if wd, err := os.Getwd(); err == nil {
+		dir := wd
+		for {
+			target := filepath.Join(dir, "migrations")
+			if info, err := os.Stat(target); err == nil && info.IsDir() {
+				if rel, err := filepath.Rel(wd, target); err == nil {
+					migrationsPath = filepath.ToSlash(rel)
+				}
+				break
+			}
+			parent := filepath.Dir(dir)
+			if parent == dir {
+				break
+			}
+			dir = parent
+		}
+	}
+
 	// Assuming migrations folder is at the root of the project
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		"file://" + migrationsPath,
 		"mysql", 
 		driver,
 	)
