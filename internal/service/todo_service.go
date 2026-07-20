@@ -28,6 +28,15 @@ func (s *todoService) GetTodos(userID uint, categoryID, priority, status string)
 }
 
 func (s *todoService) CreateTodo(userID uint, input models.TodoInput) (models.Todo, error) {
+	if input.ProjectID == nil {
+		return models.Todo{}, fmt.Errorf("project_id is required")
+	}
+	projectIDStr := fmt.Sprintf("%d", *input.ProjectID)
+	_, err := s.projectRepo.FindByID(projectIDStr, userID)
+	if err != nil {
+		return models.Todo{}, fmt.Errorf("invalid project_id or project does not belong to user")
+	}
+
 	todo := models.Todo{
 		UserID:      userID,
 		CategoryID:  input.CategoryID,
@@ -37,11 +46,20 @@ func (s *todoService) CreateTodo(userID uint, input models.TodoInput) (models.To
 		Priority:    input.Priority,
 		Deadline:    input.Deadline,
 	}
-	err := s.repo.Create(&todo)
+	err = s.repo.Create(&todo)
 	return todo, err
 }
 
 func (s *todoService) UpdateTodo(id string, userID uint, input models.TodoInput) (models.Todo, error) {
+	if input.ProjectID == nil {
+		return models.Todo{}, fmt.Errorf("project_id is required")
+	}
+	projectIDStr := fmt.Sprintf("%d", *input.ProjectID)
+	_, err := s.projectRepo.FindByID(projectIDStr, userID)
+	if err != nil {
+		return models.Todo{}, fmt.Errorf("invalid project_id or project does not belong to user")
+	}
+
 	todo, err := s.repo.FindByID(id, userID)
 	if err != nil {
 		return todo, err
