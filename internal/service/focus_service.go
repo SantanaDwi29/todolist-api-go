@@ -9,7 +9,7 @@ import (
 
 type FocusService interface {
 	GetCurrentFocusSession(userID uint) (*models.FocusSession, error)
-	StartFocusSession(userID uint, durationMinutes int) (models.FocusSession, error)
+	StartFocusSession(userID uint, durationMinutes int, durationSeconds *int) (models.FocusSession, error)
 	PauseFocusSession(userID uint) (models.FocusSession, error)
 	ResumeFocusSession(userID uint) (models.FocusSession, error)
 	StopFocusSession(userID uint) (models.FocusSession, error)
@@ -31,7 +31,7 @@ func (s *focusService) GetCurrentFocusSession(userID uint) (*models.FocusSession
 	return &session, nil
 }
 
-func (s *focusService) StartFocusSession(userID uint, durationMinutes int) (models.FocusSession, error) {
+func (s *focusService) StartFocusSession(userID uint, durationMinutes int, durationSeconds *int) (models.FocusSession, error) {
 	s.repo.CompleteAllActive(userID)
 
 	duration := 45
@@ -44,6 +44,7 @@ func (s *focusService) StartFocusSession(userID uint, durationMinutes int) (mode
 		StartTime:       time.Now(),
 		Status:          models.SessionActive,
 		DurationMinutes: duration,
+		DurationSeconds: durationSeconds,
 	}
 
 	err := s.repo.Create(&session)

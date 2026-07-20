@@ -28,11 +28,12 @@ func (h *FocusHandler) StartFocusSession(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 
 	var input struct {
-		DurationMinutes int `json:"duration_minutes"`
+		DurationMinutes int  `json:"duration_minutes"`
+		DurationSeconds *int `json:"duration_seconds"`
 	}
 	c.ShouldBindJSON(&input)
 
-	session, err := h.service.StartFocusSession(userID, input.DurationMinutes)
+	session, err := h.service.StartFocusSession(userID, input.DurationMinutes, input.DurationSeconds)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start session"})
 		return
