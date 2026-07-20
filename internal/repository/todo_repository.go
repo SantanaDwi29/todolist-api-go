@@ -25,7 +25,7 @@ func NewTodoRepository(db *gorm.DB) TodoRepository {
 }
 
 func (r *todoRepository) FindAll(userID uint, categoryID, priority, status string) ([]models.Todo, error) {
-	query := r.db.Where("user_id = ?", userID).Preload("Category")
+	query := r.db.Where("user_id = ?", userID).Preload("Category").Preload("Project")
 
 	if categoryID != "" {
 		query = query.Where("category_id = ?", categoryID)
@@ -46,7 +46,7 @@ func (r *todoRepository) FindAll(userID uint, categoryID, priority, status strin
 
 func (r *todoRepository) FindByID(id string, userID uint) (models.Todo, error) {
 	var todo models.Todo
-	if err := r.db.Where("id = ? AND user_id = ?", id, userID).Preload("Category").First(&todo).Error; err != nil {
+	if err := r.db.Where("id = ? AND user_id = ?", id, userID).Preload("Category").Preload("Project").First(&todo).Error; err != nil {
 		return todo, err
 	}
 	return todo, nil
@@ -62,14 +62,14 @@ func (r *todoRepository) Create(todo *models.Todo) error {
 	if err := r.db.Create(todo).Error; err != nil {
 		return err
 	}
-	return r.db.Preload("Category").First(todo, todo.ID).Error
+	return r.db.Preload("Category").Preload("Project").First(todo, todo.ID).Error
 }
 
 func (r *todoRepository) Update(todo *models.Todo) error {
 	if err := r.db.Save(todo).Error; err != nil {
 		return err
 	}
-	return r.db.Preload("Category").First(todo, todo.ID).Error
+	return r.db.Preload("Category").Preload("Project").First(todo, todo.ID).Error
 }
 
 func (r *todoRepository) Delete(todo *models.Todo) error {

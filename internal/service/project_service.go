@@ -23,7 +23,33 @@ func NewProjectService(repo repository.ProjectRepository) ProjectService {
 }
 
 func (s *projectService) GetAllProjects(userID uint) ([]models.Project, error) {
-	return s.repo.FindAll(userID)
+	projects, err := s.repo.FindAll(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range projects {
+		expectedStatus := models.ProjectStatusActive
+		if len(projects[i].Todos) > 0 {
+			allDone := true
+			for _, t := range projects[i].Todos {
+				if t.Status != models.StatusDone {
+					allDone = false
+					break
+				}
+			}
+			if allDone {
+				expectedStatus = models.ProjectStatusCompleted
+			}
+		}
+
+		if projects[i].Status != expectedStatus {
+			projects[i].Status = expectedStatus
+			_ = s.repo.Update(&projects[i])
+		}
+	}
+
+	return projects, nil
 }
 
 func (s *projectService) CreateProject(userID uint, input models.ProjectInput) (models.Project, error) {
@@ -39,7 +65,31 @@ func (s *projectService) CreateProject(userID uint, input models.ProjectInput) (
 }
 
 func (s *projectService) GetProjectByID(id string, userID uint) (models.Project, error) {
-	return s.repo.FindByID(id, userID)
+	project, err := s.repo.FindByID(id, userID)
+	if err != nil {
+		return project, err
+	}
+
+	expectedStatus := models.ProjectStatusActive
+	if len(project.Todos) > 0 {
+		allDone := true
+		for _, t := range project.Todos {
+			if t.Status != models.StatusDone {
+				allDone = false
+				break
+			}
+		}
+		if allDone {
+			expectedStatus = models.ProjectStatusCompleted
+		}
+	}
+
+	if project.Status != expectedStatus {
+		project.Status = expectedStatus
+		_ = s.repo.Update(&project)
+	}
+
+	return project, nil
 }
 
 func (s *projectService) UpdateProject(id string, userID uint, input models.ProjectInput) (models.Project, error) {

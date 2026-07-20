@@ -27,6 +27,36 @@ func (s *todoService) GetTodos(userID uint, categoryID, priority, status string)
 	return s.repo.FindAll(userID, categoryID, priority, status)
 }
 
+func (s *todoService) syncProjectStatus(userID uint, projectID *uint) {
+	if projectID == nil || *projectID == 0 || s.projectRepo == nil {
+		return
+	}
+	projectIDStr := fmt.Sprintf("%d", *projectID)
+	project, err := s.projectRepo.FindByID(projectIDStr, userID)
+	if err != nil {
+		return
+	}
+
+	newProjectStatus := models.ProjectStatusActive
+	if len(project.Todos) > 0 {
+		allDone := true
+		for _, t := range project.Todos {
+			if t.Status != models.StatusDone {
+				allDone = false
+				break
+			}
+		}
+		if allDone {
+			newProjectStatus = models.ProjectStatusCompleted
+		}
+	}
+
+	if project.Status != newProjectStatus {
+		project.Status = newProjectStatus
+		_ = s.projectRepo.Update(&project)
+	}
+}
+
 func (s *todoService) CreateTodo(userID uint, input models.TodoInput) (models.Todo, error) {
 	if input.ProjectID == nil {
 		return models.Todo{}, fmt.Errorf("project_id is required")
@@ -47,6 +77,9 @@ func (s *todoService) CreateTodo(userID uint, input models.TodoInput) (models.To
 		Deadline:    input.Deadline,
 	}
 	err = s.repo.Create(&todo)
+	if err == nil {
+		s.syncProjectStatus(userID, todo.ProjectID)
+	}
 	return todo, err
 }
 
@@ -65,6 +98,8 @@ func (s *todoService) UpdateTodo(id string, userID uint, input models.TodoInput)
 		return todo, err
 	}
 
+	oldProjectID := todo.ProjectID
+
 	todo.CategoryID = input.CategoryID
 	todo.ProjectID = input.ProjectID
 	todo.Title = input.Title
@@ -73,6 +108,10 @@ func (s *todoService) UpdateTodo(id string, userID uint, input models.TodoInput)
 	todo.Deadline = input.Deadline
 
 	err = s.repo.Update(&todo)
+	if err == nil {
+		s.syncProjectStatus(userID, oldProjectID)
+		s.syncProjectStatus(userID, todo.ProjectID)
+	}
 	return todo, err
 }
 
@@ -93,30 +132,7 @@ func (s *todoService) ToggleTodoStatus(id string, userID uint) (models.Status, e
 		return newStatus, err
 	}
 
-	// Auto-complete logic for Project
-	if todo.ProjectID != nil && s.projectRepo != nil {
-		projectIDStr := fmt.Sprintf("%d", *todo.ProjectID)
-		project, pErr := s.projectRepo.FindByID(projectIDStr, userID)
-		if pErr == nil {
-			allDone := true
-			for _, t := range project.Todos {
-				if t.Status != models.StatusDone {
-					allDone = false
-					break
-				}
-			}
-
-			newProjectStatus := models.ProjectStatusActive
-			if len(project.Todos) > 0 && allDone {
-				newProjectStatus = models.ProjectStatusCompleted
-			}
-
-			if project.Status != newProjectStatus {
-				project.Status = newProjectStatus
-				s.projectRepo.Update(&project)
-			}
-		}
-	}
+	s.syncProjectStatus(userID, todo.ProjectID)
 	return newStatus, err
 }
 
@@ -125,5 +141,9 @@ func (s *todoService) DeleteTodo(id string, userID uint) error {
 	if err != nil {
 		return err
 	}
-	return s.repo.Delete(&todo)
+	err = s.repo.Delete(&todo)
+	if err == nil {
+		s.syncProjectStatus(userID, todo.ProjectID)
+	}
+	return err
 }
