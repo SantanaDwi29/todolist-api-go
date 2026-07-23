@@ -58,13 +58,14 @@ func (s *todoService) syncProjectStatus(userID uint, projectID *uint) {
 }
 
 func (s *todoService) CreateTodo(userID uint, input models.TodoInput) (models.Todo, error) {
-	if input.ProjectID == nil {
-		return models.Todo{}, fmt.Errorf("project_id is required")
-	}
-	projectIDStr := fmt.Sprintf("%d", *input.ProjectID)
-	_, err := s.projectRepo.FindByID(projectIDStr, userID)
-	if err != nil {
-		return models.Todo{}, fmt.Errorf("invalid project_id or project does not belong to user")
+	if input.ProjectID != nil && *input.ProjectID != 0 {
+		projectIDStr := fmt.Sprintf("%d", *input.ProjectID)
+		_, err := s.projectRepo.FindByID(projectIDStr, userID)
+		if err != nil {
+			return models.Todo{}, fmt.Errorf("invalid project_id or project does not belong to user")
+		}
+	} else {
+		input.ProjectID = nil
 	}
 
 	todo := models.Todo{
@@ -76,21 +77,22 @@ func (s *todoService) CreateTodo(userID uint, input models.TodoInput) (models.To
 		Priority:    input.Priority,
 		Deadline:    input.Deadline,
 	}
-	err = s.repo.Create(&todo)
-	if err == nil {
+	err := s.repo.Create(&todo)
+	if err == nil && todo.ProjectID != nil {
 		s.syncProjectStatus(userID, todo.ProjectID)
 	}
 	return todo, err
 }
 
 func (s *todoService) UpdateTodo(id string, userID uint, input models.TodoInput) (models.Todo, error) {
-	if input.ProjectID == nil {
-		return models.Todo{}, fmt.Errorf("project_id is required")
-	}
-	projectIDStr := fmt.Sprintf("%d", *input.ProjectID)
-	_, err := s.projectRepo.FindByID(projectIDStr, userID)
-	if err != nil {
-		return models.Todo{}, fmt.Errorf("invalid project_id or project does not belong to user")
+	if input.ProjectID != nil && *input.ProjectID != 0 {
+		projectIDStr := fmt.Sprintf("%d", *input.ProjectID)
+		_, err := s.projectRepo.FindByID(projectIDStr, userID)
+		if err != nil {
+			return models.Todo{}, fmt.Errorf("invalid project_id or project does not belong to user")
+		}
+	} else {
+		input.ProjectID = nil
 	}
 
 	todo, err := s.repo.FindByID(id, userID)
@@ -109,8 +111,12 @@ func (s *todoService) UpdateTodo(id string, userID uint, input models.TodoInput)
 
 	err = s.repo.Update(&todo)
 	if err == nil {
-		s.syncProjectStatus(userID, oldProjectID)
-		s.syncProjectStatus(userID, todo.ProjectID)
+		if oldProjectID != nil {
+			s.syncProjectStatus(userID, oldProjectID)
+		}
+		if todo.ProjectID != nil {
+			s.syncProjectStatus(userID, todo.ProjectID)
+		}
 	}
 	return todo, err
 }

@@ -9,6 +9,7 @@ import (
 type MilestoneRepository interface {
 	FindNextActive(userID uint) (models.Milestone, error)
 	Create(milestone *models.Milestone) error
+	Update(milestone *models.Milestone) error
 }
 
 type milestoneRepository struct {
@@ -27,4 +28,8 @@ func (r *milestoneRepository) FindNextActive(userID uint) (models.Milestone, err
 
 func (r *milestoneRepository) Create(milestone *models.Milestone) error {
 	return r.db.Create(milestone).Error
+}
+
+func (r *milestoneRepository) Update(milestone *models.Milestone) error {
+	return r.db.Save(milestone).Error
 }

@@ -27,7 +27,7 @@ func SetupRoutes(r *gin.Engine) {
 	projectService := service.NewProjectService(projectRepo)
 	categoryService := service.NewCategoryService(categoryRepo)
 	focusService := service.NewFocusService(focusRepo)
-	milestoneService := service.NewMilestoneService(milestoneRepo)
+	milestoneService := service.NewMilestoneService(milestoneRepo, todoRepo)
 	analyticsService := service.NewAnalyticsService(todoRepo)
 
 	// Init Handlers

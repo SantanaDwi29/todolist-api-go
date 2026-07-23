@@ -91,6 +91,10 @@ func (s *focusService) StopFocusSession(userID uint) (models.FocusSession, error
 	}
 
 	now := time.Now()
+	if session.Status == models.SessionActive {
+		elapsed := int(now.Sub(session.StartTime).Seconds())
+		session.ElapsedSeconds += elapsed
+	}
 	session.Status = models.SessionCompleted
 	session.EndTime = &now
 
